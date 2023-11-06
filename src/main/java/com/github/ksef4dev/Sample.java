@@ -13,6 +13,7 @@ import io.alapierre.ksef.client.serializer.gson.GsonJsonSerializer;
 import io.alapierre.ksef.token.facade.KsefTokenFacade;
 import lombok.val;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.ParseException;
 
@@ -22,8 +23,8 @@ import java.text.ParseException;
  */
 public class Sample {
 
-    private static final String NIP_FIRMY = "9781399259";
-    public static final String token = "30AC53BF6313480A4C12278907E718C82086E19FD56DF3F43C889A28572FDD4A";
+    private static final String NIP_FIRMY = "2932110194";
+    public static final String token = "E5D99064EBCA79DFD6366BCEA048A1EBCE63510F70EAE9E8A4385879F9761AEE";
 
     private static final JsonSerializer serializer = new GsonJsonSerializer();
     private static final ApiClient client = new OkHttpApiClient(serializer);
@@ -38,6 +39,8 @@ public class Sample {
             System.out.println("session token = " + signedResponse.getSessionToken().getToken());
 
             val invoiceApi = new InterfejsyInteraktywneFakturaApi(client);
+            val sessionApi = new InterfejsyInteraktywneSesjaApi(client);
+
             val sessionToken = signedResponse.getSessionToken().getToken();
 
             val resp = invoiceApi.invoiceSend(new File("src/main/resources/FA2.xml"), sessionToken);
@@ -46,6 +49,9 @@ public class Sample {
                     resp.getElementReferenceNumber(),
                     resp.getReferenceNumber(),
                     resp.getProcessingCode());
+
+            val closeSessionResponse = sessionApi.terminateSession(sessionToken);
+            System.out.println(closeSessionResponse);
 
         } catch (ApiException ex) {
             System.out.printf("Błąd wywołania API %d (%s) opis błędu %s", ex.getCode(), ex.getMessage(),  ex.getResponseBody());
@@ -60,6 +66,27 @@ public class Sample {
 
         val facade = new KsefTokenFacade(sesjaApi);
         return facade.authByToken(AbstractApiClient.Environment.TEST, NIP_FIRMY, AuthorisationChallengeRequest.IdentifierType.onip, token);
+    }
+
+    public static void loadInvoice() throws ParseException, ApiException {
+
+        try {
+
+            val signedResponse = loginByToken();
+
+            System.out.println("session token = " + signedResponse.getSessionToken().getToken());
+
+            val invoiceApi = new InterfejsyInteraktywneFakturaApi(client);
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            invoiceApi.getInvoice("2932110194-20231105-651FBA47CECC-F8", signedResponse.getSessionToken().getToken(), out);
+
+            System.out.println(out.toString());
+
+        } catch (ApiException ex) {
+            System.out.printf("Błąd wywołania API %d (%s) opis błędu %s", ex.getCode(), ex.getMessage(),  ex.getResponseBody());
+            throw ex;
+        }
     }
 
 }
