@@ -50,13 +50,13 @@ public class Sample {
                     resp.getReferenceNumber(),
                     resp.getProcessingCode());
 
-            val closeSessionResponse = sessionApi.terminateSession(sessionToken);
-            System.out.println(closeSessionResponse);
+//            val closeSessionResponse = sessionApi.terminateSession(sessionToken);
+//            System.out.println(closeSessionResponse);
 
         } catch (ApiException ex) {
-            System.out.printf("Błąd wywołania API %d (%s) opis błędu %s", ex.getCode(), ex.getMessage(),  ex.getResponseBody());
+            System.err.printf("Błąd wywołania API %d (%s) opis błędu %s", ex.getCode(), ex.getMessage(),  ex.getResponseBody());
         } catch (Exception e) {
-            System.out.println("błąd: " + e.getMessage());
+            System.err.println("błąd: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -87,6 +87,14 @@ public class Sample {
             System.out.printf("Błąd wywołania API %d (%s) opis błędu %s", ex.getCode(), ex.getMessage(),  ex.getResponseBody());
             throw ex;
         }
+    }
+
+    public static void invoiceStatus(String token, String referenceNumber) throws ApiException {
+
+        val invoiceApi = new InterfejsyInteraktywneFakturaApi(client);
+        val resp = invoiceApi.invoiceStatus(token, referenceNumber);
+
+        System.out.println(resp);
     }
 
 }
